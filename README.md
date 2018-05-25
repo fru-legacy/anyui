@@ -1,9 +1,9 @@
 <div>
     <a href="https://github.com/fru/anyform">
-        <img src="/packages/readme-resources/header.png" align="right" height="95px"/>
+        <img src="/demo/readme-resources/header.png" align="right" height="95px"/>
     </a>
     <a href="goto_demo_readme">
-        <img src="/packages/readme-resources/demo.gif" align="right" width="476px"/>
+        <img src="/demo/readme-resources/demo.gif" align="right" width="476px"/>
     </a>
 </div>
 
