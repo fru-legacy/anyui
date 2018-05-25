@@ -1,0 +1,17 @@
+{
+  "lerna": "2.8.0",
+  "packages": [
+    "packages/*",
+    "packages/anyui-sets/*",
+    "docs/*"
+  ],
+  "commands": {
+    "bootstrap": {
+      "hoist": true
+    },
+    "publish": {
+      "ignore": "docs/*"
+    }
+  },
+  "version": "0.0.4"
+}

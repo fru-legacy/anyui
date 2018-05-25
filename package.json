@@ -1,0 +1,17 @@
+{
+  "name": "anyform-monorepo",
+  "scripts": {
+    "postinstall": "lerna bootstrap --hoist",
+    "publish": "lerna publish",
+    "start": "webpack-dev-server --config ./packages/config/webpack.dev.config.js --progress --hot --watch --open --env.folder ../docs/react-hello-world",
+    "build": "npm run build-example",
+    "build-example": "webpack --env.env build --env.folder docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fru/anyform.git"
+  },
+  "description": "Make any ui - easily",
+  "author": "Florian Rüberg",
+  "license": "MIT"
+}
