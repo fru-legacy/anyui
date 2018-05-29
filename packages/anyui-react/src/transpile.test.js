@@ -43,11 +43,6 @@ describe('parseCode', () => {
 		expect(parsed({test: 1})).toBe(2);
 	});
 
-	test.skip('Should allow simple function expression', () => {
-		let parsed = parseCode(['test'], 'function () { return 2; }');
-		expect(parsed({test: () => 2})()).toBe(2);
-	});
-
 	it('Should allow lambda expression', () => {
 		let parsed = parseCode(['test'], '() => 2');
 		expect(parsed({test: () => 2})()).toBe(2);
@@ -84,5 +79,15 @@ describe('parseCode', () => {
 		}`);
 		let Parsed = parsed({test: 1});
 		expect(new Parsed().getTest()).toBe(1);
+	});
+
+	it('Should allow simple function expression', () => {
+		let parsed = parseCode(['test'], 'function () { return 2; }');
+		expect(parsed()()).toBe(2);
+	});
+
+	it('Should allow multi statement function expression', () => {
+		let parsed = parseCode([], 'var test = 2; function () { return test; }');
+		expect(parsed()()).toBe(2);
 	});
 });
