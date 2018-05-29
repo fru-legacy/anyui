@@ -4,7 +4,7 @@ const UNIQUE = 'privanyui';
 const PARAMTER_NAME = (i) => `${UNIQUE}params${i}`;
 const RETURN_PLACEHOLDER = `var ${UNIQUE}returnplaceholder;`;
 
-function toFunction(variables, body) {
+function toFunction(body) {
     return new Function(PARAMTER_NAME(0), PARAMTER_NAME(1), body); 
 };
 
@@ -24,6 +24,10 @@ function transpile(code) {
     return transiled.replace(new RegExp(RETURN_PLACEHOLDER + '\\s*'), '\nreturn ');
 }
 
+const VALID_LAST_STATEMENT = [
+    'ExpressionStatement', 'FunctionDeclaration', 'ClassDeclaration'
+]
+
 function pluginReturnPlaceholder(babel) {
 
     return {
@@ -32,8 +36,8 @@ function pluginReturnPlaceholder(babel) {
                 enter: function(path) {
                     if (path.node.body && path.node.body.length > 0) {
                         var last = path.node.body[path.node.body.length - 1];
-                        
-                        if (last.type === 'ExpressionStatement') {
+
+                        if (VALID_LAST_STATEMENT.indexOf(last.type) !== -1) {
                             var placeholderNode = babel.parse(RETURN_PLACEHOLDER).program.body[0]
                             path.node.body.splice(path.node.body.length - 1, 0, placeholderNode);
                         } else {
@@ -48,15 +52,12 @@ function pluginReturnPlaceholder(babel) {
 
 
 function toTextFunction(variables, code) {
-    let transpiled = transpile(addVariables(variables, `
-        var $React = window.React, React = ${PARAMTER_NAME(1)};
-        <div>${code}</div>;
-    `));
+    let transpiled = transpile(addVariables(variables, '`' + code + '`'));
 
-    return toFunction(variables, transpiled);
+    return toFunction(transpiled);
 }
 
-let RemoveDOMReactWrapper = { 
+/*let RemoveDOMReactWrapper = { 
     createElement: function() {
         var results = [];
         var args = Array.prototype.slice.call(arguments);
@@ -65,18 +66,18 @@ let RemoveDOMReactWrapper = {
         }
         return results.join('');
     }
-};
+};*/
 
 export function parseText(variables, code) {
     if (!/\{|\}/.test(code)) return () => code;
 
-    var func = toTextFunction(variables, code);
-    return function(params) {
+    return toTextFunction(variables, code);
+    /*return function(params) {
         return func(params, RemoveDOMReactWrapper);
-    };
+    };*/
 }
 
 export function parseCode(variables, code) {
-    // TODO implement
-    return () => 2;
+    let transpiled = transpile(addVariables(variables, code));
+    return toFunction(transpiled);
 }
