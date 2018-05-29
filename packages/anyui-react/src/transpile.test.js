@@ -52,4 +52,37 @@ describe('parseCode', () => {
 		let parsed = parseCode(['test'], '() => 2');
 		expect(parsed({test: () => 2})()).toBe(2);
 	});
+
+	it('Should passing full objects', () => {
+		let parsed = parseCode(['test'], 'test.test + 1');
+		expect(parsed({test: {test: 1}})).toBe(2);
+	});
+
+	it('Should allow multiple statements', () => {
+		let parsed = parseCode(['test'], 'let xyz = 1; test + xyz');
+		expect(parsed({test: 1})).toBe(2);
+	});
+
+	it('Should allow multiple parameters', () => {
+		let parsed = parseCode(['test1', 'test2'], '() => test1 + test2');
+		expect(parsed({test1: 1, test2: 2})()).toBe(3);
+	});
+
+	it('Should allow undefined parameters', () => {
+		let parsed = parseCode(['test1', 'test2'], '() => test1 + test2');
+		expect(parsed({test1: 1})()).toBe(NaN);
+	});
+
+	it('Should allow class results', () => {
+		let parsed = parseCode(['test'], `class Test {
+			constructor() {
+				this.test = test;
+			}
+			getTest() {
+				return this.test;
+			}
+		}`);
+		let Parsed = parsed({test: 1});
+		expect(new Parsed().getTest()).toBe(1);
+	});
 });

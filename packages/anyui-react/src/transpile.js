@@ -37,11 +37,20 @@ function pluginReturnPlaceholder(babel) {
                     if (path.node.body && path.node.body.length > 0) {
                         var last = path.node.body[path.node.body.length - 1];
 
+                        if (last.type === 'ClassDeclaration') {
+                            last = {
+                                type: 'ExpressionStatement',
+                                expression: {
+                                    type: 'Identifier',
+                                    name: (last.id && last.id.name) || 'window'
+                                }
+                            };
+                            path.node.body.push(last);
+                        }
+
                         if (VALID_LAST_STATEMENT.indexOf(last.type) !== -1) {
-                            var placeholderNode = babel.parse(RETURN_PLACEHOLDER).program.body[0]
+                            var placeholderNode = babel.parse(RETURN_PLACEHOLDER).program.body[0];
                             path.node.body.splice(path.node.body.length - 1, 0, placeholderNode);
-                        } else {
-                            throw last.type; // TODO remove
                         }
                     }
                 },
@@ -50,31 +59,10 @@ function pluginReturnPlaceholder(babel) {
     };
 }
 
-
-function toTextFunction(variables, code) {
-    let transpiled = transpile(addVariables(variables, '`' + code + '`'));
-
-    return toFunction(transpiled);
-}
-
-/*let RemoveDOMReactWrapper = { 
-    createElement: function() {
-        var results = [];
-        var args = Array.prototype.slice.call(arguments);
-        for(var i = 2; i < args.length; i++) {
-            if (args[i] || args[i] === 0) results.push('' + args[i]);
-        }
-        return results.join('');
-    }
-};*/
-
 export function parseText(variables, code) {
     if (!/\{|\}/.test(code)) return () => code;
-
-    return toTextFunction(variables, code);
-    /*return function(params) {
-        return func(params, RemoveDOMReactWrapper);
-    };*/
+    let transpiled = transpile(addVariables(variables, '`' + code + '`'));
+    return toFunction(transpiled);
 }
 
 export function parseCode(variables, code) {
