@@ -1,6 +1,15 @@
-import {transpile} from './transpile';
+import {parseText} from './transpile';
 
-test('adds 1 + 2 to equal 3', () => {
-	console.log(transpile('const getMessage = () => "Hello World";'));
-	expect(3).toBe(3);
+describe('parseText', () => {
+	it('Should just return normal text', () => {
+		let parsed = parseText(['test'], 'abc')
+		expect(parsed()).toBe('abc');
+	});
+
+	it('Should replace simple expression', () => {
+		let parsed = parseText(['test'], 'a{test}c')
+		expect(parsed({test: 'b'})).toBe('abc');
+	});
+
+	
 });
