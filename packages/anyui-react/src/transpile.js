@@ -1,16 +1,16 @@
 import * as Babel from '@babel/standalone';
 
 const UNIQUE = 'privanyui';
-const PARAMTER_NAME = (i) => `${UNIQUE}params${i}`;
+const PARAMTER_NAME = `${UNIQUE}params0`;
 const RETURN_PLACEHOLDER = `var ${UNIQUE}returnplaceholder;`;
 
 function toFunction(body) {
-    return new Function(PARAMTER_NAME(0), PARAMTER_NAME(1), body); 
+    return new Function(PARAMTER_NAME, body); 
 };
 
 function addVariables(variables, transpiled) {
-    let ensureFirstParameter = `${PARAMTER_NAME(0)} = ${PARAMTER_NAME(0)} || {};`;
-    variables = variables.map(v => `let ${v} = ${PARAMTER_NAME(0)}.${v};`);
+    let ensureFirstParameter = `${PARAMTER_NAME} = ${PARAMTER_NAME} || {};`;
+    variables = variables.map(v => `let ${v} = ${PARAMTER_NAME}.${v};`);
 
     return [ensureFirstParameter].concat(variables).concat([transpiled]).join('\n');
 }
@@ -29,7 +29,6 @@ const VALID_LAST_STATEMENT = [
 ]
 
 function pluginReturnPlaceholder(babel) {
-
     return {
         visitor: {
             Program: {
