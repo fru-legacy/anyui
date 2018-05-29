@@ -25,6 +25,8 @@ function strip(result) {
     delete result.parent;
     if (!result.value) delete result.value;
     if (!result.name) delete result.name;
+
+    if (result.value && result.type === 'text') result.value = result.value.trim();
     
     // call recursivly
     return result;
