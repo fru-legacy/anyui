@@ -1,10 +1,10 @@
 import {toJSON} from './normalize';
 
 describe('parseText', () => {
-	test.skip('Should just return normal text', () => {
+	it('Should just return normal text', () => {
     let json = toJSON(`<div if="test > 2">Test</div>`);
 
-		expect(json).toBe({
+		expect(json).toEqual({
         type: 'element',
         name: 'div',
         children: [{ type: 'text', value: 'Test' }],

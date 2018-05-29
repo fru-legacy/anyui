@@ -8,6 +8,24 @@ export function toJSON(xml) {
 }
 
 function strip(result) {
+    if (result) {
+        if (result.attributes && Object.keys(result.attributes).length === 0) {
+            delete result.attributes;
+        }
+    }
+
+    if (result.children) {
+        if (result.children.length === 0) {
+            delete result.children;
+        } else {
+            result.children = result.children.map(strip);
+        }
+    }
+
+    delete result.parent;
+    if (!result.value) delete result.value;
+    if (!result.name) delete result.name;
+    
     // call recursivly
     return result;
 }
