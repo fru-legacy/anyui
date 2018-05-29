@@ -25,7 +25,7 @@ function toTextFunction(variables, code) {
 
     // Hack to add return; TODO use plugin
     transpiled = transpiled.replace(new RegExp(PARAMTER_NAME(1) + ';\\s*'), PARAMTER_NAME(1) + '; \nreturn ');
-    
+
     return toFunction(variables, transpiled);
 }
 
