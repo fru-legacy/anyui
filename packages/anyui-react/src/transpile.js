@@ -48,3 +48,8 @@ export function parseText(variables, code) {
         return func(params, RemoveDOMReactWrapper);
     };
 }
+
+export function parseCode(variables, code) {
+    // TODO implement
+    return () => 2;
+}

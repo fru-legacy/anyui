@@ -26,12 +26,12 @@ describe('parseText', () => {
 		expect(parsed({test: 'b'})).toBe('abc<>&\'"');
 	});
 
-	it('Should remove tags', () => {
+	it('Should remove tags in text', () => {
 		let parsed = parseText(['test'], 'a<div>{test}</div>c');
 		expect(parsed({test: 'test'})).toBe('atestc');
 	});
 
-	it('Should remove expression tags', () => {
+	it('Should remove tags in expressions', () => {
 		let parsed = parseText(['test'], 'a{<div>{test}</div>}c');
 		expect(parsed({test: 'test'})).toBe('atestc');
 	});
