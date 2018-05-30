@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`render Should respect the if attribute 1`] = `
+<div>
+  Testw
+</div>
+`;
+
+exports[`render Should respect the if attribute 2`] = `
+<div>
+  Testw
+</div>
+`;
