@@ -45,7 +45,8 @@ function handleSpecialUnnamedFunctionCase(e, code) {
 function transpile(code) {
     return Babel.transform(code, { 
         presets: ['react', 'es2015'],
-        plugins: [pluginReturnPlaceholder]
+        plugins: [pluginReturnPlaceholder],
+        compact: true
     }).code;
 }
 

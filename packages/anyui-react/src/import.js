@@ -14,6 +14,7 @@ function loadScript(code){
 
 export function dynamicImport(code) {
     /*
+    Example, Convert to module, exports, require
     (function () {
         var define, exports = {};
         if (window.define && window.define.amd) {

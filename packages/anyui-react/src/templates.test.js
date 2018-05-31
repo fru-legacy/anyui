@@ -11,4 +11,4 @@ describe('render', () => {
         var dom = renderJson(React, toJSON(`<div if="test > 2">Test</div>`));
         expect(shallow(dom({test: 3})).text()).toBe('Test');
     });
-}); 
+});
