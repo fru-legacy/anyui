@@ -14,13 +14,18 @@ describe('render', () => {
     });
 
     it('Should be able to iterate array', () => {
-        var dom = renderJson(React, toJSON(`<div repeat="['A','B','C']">\${index}.\${item};</div>`));
-        expect(shallow(dom()).text()).toBe('1.A;2.B;3.C;');
+        var dom = renderJson(React, toJSON(`<div repeat="['a','b','c']">\${index}.\${item};</div>`));
+        expect(shallow(dom()).text()).toBe('1.a;2.b;3.c;');
     });
 
     it('Should let the repeat-item to be defined', () => {
-        var dom = renderJson(React, toJSON(`<div repeat="['A','B','C']" repeat-item="i">\${index_i}.\${i};</div>`));
-        expect(shallow(dom()).text()).toBe('1.A;2.B;3.C;');
+        var dom = renderJson(React, toJSON(`<div repeat="['a','b','c']" repeat-item="i">\${index_i}.\${i};</div>`));
+        expect(shallow(dom()).text()).toBe('1.a;2.b;3.c;');
+    });
+
+    it('Should be able to repeat neseted dom', () => {
+        var dom = renderJson(React, toJSON(`<div repeat="['a','b','c']"><span>\${item}</span></div>`));
+        expect(shallow(dom()).text()).toBe('abc');
     });
 
     it('Should allow custom elements and props spread attribute', () => {
