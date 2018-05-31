@@ -97,7 +97,7 @@ function pluginReturnPlaceholder(babel) {
 }
 
 export function parseText(variables, code) {
-    if (!/\{|\}/.test(code)) return () => code;
+    if (!/\$\{/.test(code)) return () => code;
     let transpiled = transpileExpressionAsStatement(addVariables(variables, '`' + code + '`'));
     return toFunction(transpiled);
 }
