@@ -13,17 +13,17 @@ describe('render', () => {
         expect(shallow(dom({test: 3})).text()).toBe('Test');
     });
 
-    test.skip('Should be able to iterate array', () => {
+    it('Should be able to iterate array', () => {
         var dom = renderJson(React, [], toJSON(`<div repeat="['a','b','c']">\${index}.\${item};</div>`));
-        expect(shallow(dom()).text()).toBe('1.a;2.b;3.c;');
+        expect(shallow(dom()).text()).toBe('0.a;1.b;2.c;');
     });
 
-    test.skip('Should let the repeat-item to be defined', () => {
+    it('Should let the repeat-item to be defined', () => {
         var dom = renderJson(React, [], toJSON(`<div repeat="['a','b','c']" repeat-item="i">\${index_i}.\${i};</div>`));
-        expect(shallow(dom()).text()).toBe('1.a;2.b;3.c;');
+        expect(shallow(dom()).text()).toBe('0.a;1.b;2.c;');
     });
 
-    test.skip('Should be able to repeat neseted dom', () => {
+    it('Should be able to repeat neseted dom', () => {
         var dom = renderJson(React, [], toJSON(`<div repeat="['a','b','c']"><span>\${item}</span></div>`));
         expect(shallow(dom()).text()).toBe('abc');
     });
@@ -43,7 +43,7 @@ describe('render', () => {
         expect(shallow(dom({Element})).text()).toBe('ab');
     });
 
-    test.skip('Should execute define before ofter attributes', () => {
+    it('Should execute define before other attributes', () => {
         var dom = renderJson(React, ['test'], toJSON(`<div if="test2 > 2" define-test2="test">Test</div>`));
         expect(shallow(dom({test: 1})).text()).toBe('');
         expect(shallow(dom({test: 3})).text()).toBe('Test');

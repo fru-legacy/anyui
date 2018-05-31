@@ -1,16 +1,16 @@
 import {parseText, parseCode} from './transpile';
 
 function renderChildren(React, variables, children) {
-    if (!children) return (x) => []; 
+    if (!children) return (scope) => []; 
     var renderers = children.map(c => renderJson(React, variables, c));
-    return (x) => renderers.map(r => r(x));
+    return (scope) => renderers.map(r => r(scope));
 }
 
 function renderTagName(variables, name) {
     if (name[0] === name[0].toUpperCase()) {
         return parseCode(variables, name);
     } else {
-        return (x) => name;
+        return (scope) => name;
     }
 }
 
@@ -27,6 +27,26 @@ function getPropsByPrefix(prefix, object) {
     return results;
 }
 
+function combineTransformers(transforms) {
+    if (!transforms.length) return (scope) => scope;
+    return (scope) => {
+        let result = Object.assign({}, scope);
+        for(var transform of transforms) {
+            result[transform.key] = transform.code(scope);
+        }
+        return result;
+    };
+}
+
+function extendVariables(variables, added) {
+    if (!added.length) return variables;
+    let extended = variables.slice();
+    for(let key of added) {
+        if (variables.indexOf(key) === -1) extended.push(key);
+    }
+    return extended;
+}
+
 // Attributes can extend the scope, change definitions and influence child rendering
 // This considers the attributes:
 // if="exp"
@@ -35,28 +55,51 @@ function getPropsByPrefix(prefix, object) {
 // define-{name}="exp"
 function renderAttributes(variables, attributes) {
 
-    var scopeTransforms = [];
+    attributes = attributes || {};
 
-    for(var define of getPropsByPrefix('define-', attributes)) {
-        let transform = parseCode(variables, define.value);
+    let transforms = getPropsByPrefix('define-', attributes).map(({key, value}) => { 
+        return {key, code: parseCode(variables, value)}; 
+    });
+    let scopeTransform = combineTransformers(transforms);
+    let varsPlusDefine = extendVariables(variables, transforms.map(x => x.key));
+    let childrenTransform = (scope, render) => render(scope);
 
-        added = extendAdded(variables, added, define.key);
-        scopeTransforms.push((x) => x[define.key] = transform(x))
-    }
+    let extendedVars = varsPlusDefine.slice();
 
-    var childrenTransform = (x, renderChildren) => renderChildren(x);
-
-
-
-    let scopeTransform = (x) => x;
-    if (scopeTransforms.length) {
-        scopeTransform = (x) => Object.assign({}, x);
-        for(var transform of scopeTransforms) {
-            scopeTransform = (x) => transform(scopeTransform(x))
+    if (attributes.repeat) {
+        let oldChildrenTransform = childrenTransform;
+        let items = parseCode(varsPlusDefine, attributes.repeat);
+        extendedVars = extendVariables(extendedVars, ['item', 'index']);
+        let repeatItem = null;
+        if (attributes['repeat-item']) {
+            repeatItem = attributes['repeat-item'];
+            extendedVars = extendVariables(extendedVars, [repeatItem, 'index_' + repeatItem]);
+        }
+        childrenTransform = (scope, render) => {
+            var content = [];
+            (items(scope) || []).map((item, index) => {
+                let scopeDash = Object.assign({}, scope);
+                scopeDash.item = item;
+                scopeDash.index = index;
+                if (repeatItem) {
+                    scopeDash[repeatItem] = item;
+                    scopeDash['index_' + repeatItem] = index;
+                }
+                content = content.concat(oldChildrenTransform(scopeDash, render));
+            })
+            return content;
         }
     }
 
-    return {extendedVars: [], scopeTransform, childrenTransform};
+    if (attributes.if) {
+        let oldChildrenTransform = childrenTransform;
+        let condition = parseCode(varsPlusDefine, attributes.if);
+        childrenTransform = (scope, render) => {
+            return condition(scope) ? oldChildrenTransform(scope, render) : [];
+        }
+    }
+
+    return {extendedVars, scopeTransform, childrenTransform};
 }
 
 // Renders properties considering the following attributes:
@@ -71,15 +114,19 @@ export function renderJson(React, variables, json) {
     if (json.type === 'element') {
 
         let tag = renderTagName(variables, json.name);
-        let {extendedVars, scopeTransform, childrenTransform} = renderAttributes(variables, json.attributes);
+        let {
+            extendedVars,
+            scopeTransform,
+            childrenTransform
+        } = renderAttributes(variables, json.attributes);
 
         let props = renderProps(extendedVars, json.attributes);
         let children = renderChildren(React, extendedVars, json.children);
 
-        return (x) => {
-            var xdash = scopeTransform(x);
-            var cdash = childrenTransform(xdash, children);
-            return React.createElement(tag(x), props(xdash), ...cdash);
+        return (scope) => {
+            var sdash = scopeTransform(scope);
+            var cdash = childrenTransform(sdash, children);
+            return React.createElement(tag(scope), props(sdash), ...cdash);
         };
     } else if (json.type === 'text') {
         return parseText(variables, json.value);
