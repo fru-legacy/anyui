@@ -1,3 +1,3 @@
-export function render(React, json) {
-    return () => <div>Testw</div>;
+export function renderJson(React, json) {
+    return () => <div>Test</div>;
 }

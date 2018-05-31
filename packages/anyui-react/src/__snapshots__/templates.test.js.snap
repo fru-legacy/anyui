@@ -2,12 +2,12 @@
 
 exports[`render Should respect the if attribute 1`] = `
 <div>
-  Testw
+  Test
 </div>
 `;
 
 exports[`render Should respect the if attribute 2`] = `
 <div>
-  Testw
+  Test
 </div>
 `;
