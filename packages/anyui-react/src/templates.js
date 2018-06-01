@@ -126,6 +126,9 @@ function renderProps(variables, attributes) {
     });
     var spread = attributes && attributes.props && parseCode(variables, attributes.props);
     var propStyle = attributes && attributes.style && parseCode(variables, attributes.style);
+    var propClass = attributes && attributes.class && parseCode(variables, attributes.class);
+    var propClassName = attributes && attributes.className && parseText(variables, attributes.className);
+
     var texts = getAllTextAttributes(attributes).map(({key, value}) => {
         return {key, text: parseText(variables, value)};
     });
@@ -134,6 +137,17 @@ function renderProps(variables, attributes) {
         for (let t of texts) props[t.key] = t.text(scope);
         for (let t of transforms) props[t.key] = t.code(scope);
         if (propStyle) props.style = propStyle(scope);
+        if (propClassName) props.className = propClassName(scope);
+        if (propClass) {
+            let classes = propClass(scope);
+            for(let c in classes) {
+                if (classes[c]) {
+                    if (props.className) props.className += ' ';
+                    else props.className = '';
+                    props.className += c;
+                }
+            }
+        }
         return props;
     };
 }

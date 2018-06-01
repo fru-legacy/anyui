@@ -56,12 +56,12 @@ describe('render', () => {
 
     it('Should support class property', () => {
         var dom = renderJson(React, [], toJSON(`<div class="{a: 1, b: 0}" />`));
-        expect(mount(dom()).html()).toBe(`<div class="a"></div>`);
+        expect(mount(dom()).get(0).props.className).toBe('a');
     });
 
     it('Should support className property', () => {
         var dom = renderJson(React, [], toJSON(`<div className="a \${'b'}" />`));
-        expect(mount(dom()).html()).toBe(`<div class="a b"></div>`);
+        expect(mount(dom()).get(0).props.className).toBe('a b');
     });
 
     it('Should support style property', () => {

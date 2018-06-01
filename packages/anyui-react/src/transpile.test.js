@@ -39,7 +39,7 @@ describe('parseText', () => {
 
 describe('parseCode', () => {
 	it('Should execute simple expression', () => {
-		let parsed = parseCode(['test'], 'test + 1;');
+		let parsed = parseCode(['test'], 'test + 1');
 		expect(parsed({test: 1})).toBe(2);
 	});
 
@@ -51,11 +51,6 @@ describe('parseCode', () => {
 	it('Should passing full objects', () => {
 		let parsed = parseCode(['test'], 'test.test + 1');
 		expect(parsed({test: {test: 1}})).toBe(2);
-	});
-
-	it('Should allow multiple statements', () => {
-		let parsed = parseCode(['test'], 'let xyz = 1; test + xyz');
-		expect(parsed({test: 1})).toBe(2);
 	});
 
 	it('Should allow multiple parameters', () => {
@@ -73,7 +68,7 @@ describe('parseCode', () => {
 		expect(parsed().a).toBe(2);
 	});
 
-	it('Should allow class results', () => {
+	test.skip('Should allow class results', () => {
 		let parsed = parseCode(['test'], `class Test {
 			constructor() {
 				this.test = test;
@@ -88,11 +83,6 @@ describe('parseCode', () => {
 
 	it('Should allow simple function expression', () => {
 		let parsed = parseCode(['test'], 'function () { return 2; }');
-		expect(parsed()()).toBe(2);
-	});
-
-	it('Should allow multi statement function expression', () => {
-		let parsed = parseCode([], 'var test = 2; function () { return test; }');
 		expect(parsed()()).toBe(2);
 	});
 });

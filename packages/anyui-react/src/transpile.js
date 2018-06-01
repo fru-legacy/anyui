@@ -1,112 +1,65 @@
 import * as Babel from '@babel/standalone';
-import { parseExpression } from 'babylon';
+import { parseExpression, parse } from 'babylon';
 
-const UNIQUE = 'privanyui';
-const PARAMTER_NAME = `${UNIQUE}params0`;
-const RETURN_PLACEHOLDER = `var ${UNIQUE}returnplaceholder;`;
-const FALLBACK_FUNCTION_NAME = `${UNIQUE}func`;
-
-function toFunction(body) {
-    return new Function(PARAMTER_NAME, body); 
-};
-
-function addVariables(variables, transpiled) {
-    let ensureFirstParameter = `${PARAMTER_NAME} = ${PARAMTER_NAME} || {};`;
-    variables = variables.map(v => `let ${v} = ${PARAMTER_NAME}.${v};`);
-
-    return [ensureFirstParameter].concat(variables).concat([transpiled]).join('\n');
-}
-
-function handleSpecialUnnamedFunctionCase(e, code) {
-    if (e.message.indexOf('Unexpected token') != -1) {
-        // Might be special case that an unnamed function is used as a statement
-        
-        var lines = code.split(/\r?\n/);
-
-        var beforeLoc = lines.slice(0, e.loc.line - 1);
-        var beforeLocLine = lines[e.loc.line - 1].substring(0, e.loc.column + 1);
-
-        var afterLoc = lines.slice(e.loc.line);
-        var afterLocLine = lines[e.loc.line - 1].substring(e.loc.column + 1);
-
-        var before = beforeLoc.join('\n') + '\n' + beforeLocLine;
-        var after = afterLocLine + '\n' + afterLoc.join('\n');
-
-        if (/function\s+\($/.test(before)) {
-            before = before.replace(/function\s+\($/, `function ${FALLBACK_FUNCTION_NAME} (`);
-            try { 
-                return transpile(before + after);
-            } catch (_) {
-                // empty
-            }
-        }
-    }
-}
-
-function transpile(code) {
-
-    return Babel.transform(code, { 
-        presets: ['react', 'es2015'],
-        plugins: [pluginReturnPlaceholder],
-        compact: true
-    }).code;
-}
-
-function transpileExpressionAsStatement(code) {
-    var transpiled;
-    try {
-        transpiled = transpile(code);
-    } catch(e) {
-        transpiled = handleSpecialUnnamedFunctionCase(e, code);
-        if (!transpiled) throw e;
-    }
-
-    return transpiled.replace(new RegExp(RETURN_PLACEHOLDER + '\\s*'), '\nreturn ');
-}
-
-const VALID_LAST_STATEMENT = [
-    'ExpressionStatement', 'FunctionDeclaration', 'ClassDeclaration'
-]
-
-function pluginReturnPlaceholder(babel) {
+function createWrapperAst(expressionAst, parameterName, variables) {
     return {
-        visitor: {
-            Program: {
-                enter: function(path) {
-                    if (path.node.body && path.node.body.length > 0) {
-                        var last = path.node.body[path.node.body.length - 1];
-
-                        if (last.type === 'ClassDeclaration') {
-                            last = {
-                                type: 'ExpressionStatement',
-                                expression: {
-                                    type: 'Identifier',
-                                    name: (last.id && last.id.name) || 'window'
-                                }
-                            };
-                            path.node.body.push(last);
-                        }
-
-                        if (VALID_LAST_STATEMENT.indexOf(last.type) !== -1) {
-                            var placeholderNode = babel.parse(RETURN_PLACEHOLDER).program.body[0];
-                            path.node.body.splice(path.node.body.length - 1, 0, placeholderNode);
-                        } else {
-                            console.log(last.type);
-                        }
+        type: 'Program',
+        sourceType: 'script',
+        body: [
+            
+            // parameter1 = parameter1 || {};
+            { 
+                type: 'ExpressionStatement',
+                expression: {
+                    type: 'AssignmentExpression',
+                    operator: '=',
+                    left: {type: 'Identifier', name: parameterName},
+                    right: {
+                        type: 'LogicalExpression',
+                        operator: '||',
+                        left: {type: 'Identifier', name: parameterName},
+                        right: {type: 'ObjectExpression', properties: []}
                     }
-                },
+                }
             },
-        },
-    };
+
+            // var a = parameter1.a; 
+            ...variables.map(v => {return {
+                type: 'VariableDeclaration',
+                kind: 'var',
+                declarations: [{
+                    type: 'VariableDeclarator',
+                    id: {type: 'Identifier', name: v},
+                    init: {
+                        type: 'MemberExpression',
+                        object: {type: 'Identifier', name: parameterName},
+                        property: {type: 'Identifier', name: v}
+                    }
+                }]
+            }}),
+            
+            // return expression;
+            {
+                type: 'ReturnStatement',
+                argument: expressionAst
+            }
+        ]
+    }
 }
 
 export function parseText(variables, code) {
     if (!/\$\{/.test(code)) return () => code;
-    let transpiled = transpileExpressionAsStatement(addVariables(variables, '`' + code + '`'));
-    return toFunction(transpiled);
+    return parseCode(variables, '`' + code + '`');
 }
 
+const PARAMETER_NAME = '__privanyuip0';
+
 export function parseCode(variables, code) {
-    let transpiled = transpileExpressionAsStatement(addVariables(variables, code));
-    return toFunction(transpiled);
+    let x = parseExpression(code);
+    let ast = createWrapperAst(x, PARAMETER_NAME, variables);
+    let transpiled = Babel.transformFromAst(ast, code, { 
+        presets: ['react', 'es2015'],
+        compact: true
+    }).code;
+    return new Function(PARAMETER_NAME, transpiled); 
 }
