@@ -68,6 +68,11 @@ describe('parseCode', () => {
 		expect(parsed({test1: 1})()).toBe(NaN);
 	});
 
+	it('Should allow object literal expression', () => {
+		let parsed = parseCode([], '{ a: 2 }');
+		expect(parsed().a).toBe(2);
+	});
+
 	it('Should allow class results', () => {
 		let parsed = parseCode(['test'], `class Test {
 			constructor() {

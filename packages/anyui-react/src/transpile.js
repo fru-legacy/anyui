@@ -1,4 +1,5 @@
 import * as Babel from '@babel/standalone';
+import { parseExpression } from 'babylon';
 
 const UNIQUE = 'privanyui';
 const PARAMTER_NAME = `${UNIQUE}params0`;
@@ -43,6 +44,7 @@ function handleSpecialUnnamedFunctionCase(e, code) {
 }
 
 function transpile(code) {
+
     return Babel.transform(code, { 
         presets: ['react', 'es2015'],
         plugins: [pluginReturnPlaceholder],
@@ -88,6 +90,8 @@ function pluginReturnPlaceholder(babel) {
                         if (VALID_LAST_STATEMENT.indexOf(last.type) !== -1) {
                             var placeholderNode = babel.parse(RETURN_PLACEHOLDER).program.body[0];
                             path.node.body.splice(path.node.body.length - 1, 0, placeholderNode);
+                        } else {
+                            console.log(last.type);
                         }
                     }
                 },

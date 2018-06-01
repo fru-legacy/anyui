@@ -28,7 +28,7 @@ describe('render', () => {
         expect(shallow(dom()).text()).toBe('abc');
     });
 
-    test.skip('Should allow custom elements and props spread attribute', () => {
+    it('Should allow custom elements and props spread attribute', () => {
         var Element = ({a, b}) => <div>{a}{b}</div>;
         var props = {a: 'a', b: 'b'};
 
@@ -36,11 +36,11 @@ describe('render', () => {
         expect(shallow(dom({Element, props})).text()).toBe('ab');
     });
 
-    test.skip('Should allow constant and prop attributes (jsx a="a" vs a={a})', () => {
-        var Element = ({a, b}) => <div>{a}{b}</div>;
+    it('Should allow constant and prop attributes (jsx a="a" vs a={a})', () => {
+        var Element = ({a, b, c}) => <div>{a}{b}{c}</div>;
 
-        var dom = renderJson(React, ['Element'], toJSON(`<Element a="a" prop-b="'b'" />`));
-        expect(shallow(dom({Element})).text()).toBe('ab');
+        var dom = renderJson(React, ['Element'], toJSON(`<Element a="a" prop-b="'b'" c="\${'c'}" />`));
+        expect(shallow(dom({Element})).text()).toBe('abc');
     });
 
     it('Should execute define before other attributes', () => {
@@ -49,5 +49,23 @@ describe('render', () => {
         expect(shallow(dom({test: 3})).text()).toBe('Test');
     });
 
-    // TODO class, class-set, style & style-set
+    it('Should support virtual fragments', () => {
+        var dom = renderJson(React, [], toJSON(`<div><virtual><span a="a"/><span b="b"/></virtual></div>`));
+        expect(mount(dom()).html()).toBe(`<div><span a="a"></span><span b="b"></span></div>`);
+    });
+
+    it('Should support class property', () => {
+        var dom = renderJson(React, [], toJSON(`<div class="{a: 1, b: 0}" />`));
+        expect(mount(dom()).html()).toBe(`<div class="a"></div>`);
+    });
+
+    it('Should support className property', () => {
+        var dom = renderJson(React, [], toJSON(`<div className="a \${'b'}" />`));
+        expect(mount(dom()).html()).toBe(`<div class="a b"></div>`);
+    });
+
+    it('Should support style property', () => {
+        var dom = renderJson(React, [], toJSON(`<div style="{border: '1px solid black'}" />`));
+        expect(mount(dom()).get(0).props.style.border).toBe('1px solid black');
+    });
 });
